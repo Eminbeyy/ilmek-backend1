@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <script>
+        if (!localStorage.getItem('token')) { window.location.href = 'auth.html'; }
+    </script>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Duyurular | İLMEK</title>
+    
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Cinzel:wght@700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+    <style>
+        :root {
+            --bg: #050505; --gold: #b8924e; --gold-glow: rgba(184, 146, 78, 0.3);
+            --glass: rgba(255, 255, 255, 0.03); --glass-border: rgba(255, 255, 255, 0.08); --text: #F5F5F7;
+        }
+
+        body {
+            margin: 0; background: var(--bg); font-family: 'Inter', sans-serif;
+            color: var(--text); min-height: 100vh; overflow-x: hidden;
+        }
+
+        #canvas-bg { position: fixed; inset: 0; z-index: -1; pointer-events: none; }
+
+        .container { max-width: 800px; margin: 0 auto; padding: 40px 20px; position: relative; z-index: 10; }
+
+        .header { text-align: center; margin-bottom: 50px; }
+        .header h1 { 
+            font-family: 'Cinzel', serif; font-size: 2.5rem; color: var(--gold); 
+            letter-spacing: 5px; margin: 0; text-shadow: 0 0 20px var(--gold-glow);
+        }
+        .back-btn { 
+            display: inline-block; margin-top: 20px; color: var(--gold); 
+            text-decoration: none; font-size: 0.9rem; font-weight: 600; 
+            transition: 0.3s; opacity: 0.8;
+        }
+        .back-btn:hover { opacity: 1; transform: translateX(-5px); }
+
+        /* DUYURU KARTLARI */
+        .duyuru-card {
+            background: var(--glass); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);
+            border: 1px solid var(--glass-border); border-radius: 20px;
+            padding: 25px; margin-bottom: 20px; transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            animation: slideUp 0.6s ease-out forwards;
+        }
+        .duyuru-card:hover { 
+            border-color: var(--gold); 
+            transform: translateY(-8px); 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5); 
+        }
+
+        .category-badge {
+            display: inline-block; padding: 4px 12px; background: rgba(184, 146, 78, 0.15);
+            color: var(--gold); border: 1px solid rgba(184, 146, 78, 0.3);
+            border-radius: 8px; font-size: 0.7rem; font-weight: 800;
+            text-transform: uppercase; margin-bottom: 15px;
+        }
+
+        .duyuru-title { font-size: 1.5rem; font-weight: 800; margin-bottom: 12px; color: #fff; letter-spacing: -0.5px; }
+        .duyuru-content { font-size: 1rem; color: rgba(255,255,255,0.7); line-height: 1.7; font-weight: 300; }
+        .duyuru-date { font-size: 0.75rem; color: var(--gold); opacity: 0.5; margin-top: 20px; text-align: right; font-weight: 600; }
+
+        @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+        
+        #loading { text-align: center; color: var(--gold); font-weight: 600; margin-top: 50px; letter-spacing: 2px; }
+    </style>
+</head>
+<body>
+
+    <canvas id="canvas-bg"></canvas>
+
+    <div class="container">
+        <div class="header">
+            <h1>DUYURULAR</h1>
+            <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> SİSTEME DÖN</a>
+        </div>
+
+        <div id="loading"><i class="fa-solid fa-circle-notch fa-spin"></i> VERİLER SENKRONİZE EDİLİYOR...</div>
+        <div id="duyuru-listesi"></div>
+    </div>
+
+    <script>
+        const API_URL = 'https://ilmek-backend.onrender.com/api/announcements/all';
+
+        async function duyurulariGetir() {
+            try {
+                const res = await fetch(API_URL);
+                const data = await res.json();
+                
+                const listesi = document.getElementById('duyuru-listesi');
+                const loading = document.getElementById('loading');
+                loading.style.display = 'none';
+
+                if (!Array.isArray(data) || data.length === 0) {
+                    listesi.innerHTML = "<p style='text-align:center; opacity:0.3; margin-top:50px;'>HENÜZ BİR KAYIT BULUNAMADI.</p>";
+                    return;
+                }
+
+                listesi.innerHTML = data.map(post => `
+                    <div class="duyuru-card">
+                        <span class="category-badge">${post.category || 'GENEL'}</span>
+                        <div class="duyuru-title">${post.title}</div>
+                        <div class="duyuru-content">${post.content}</div>
+                        <div class="duyuru-date">${new Date(post.createdAt || Date.now()).toLocaleDateString('tr-TR', {day:'numeric', month:'long', year:'numeric'})}</div>
+                    </div>
+                `).join('');
+
+            } catch (err) {
+                console.error("Hata:", err);
+                document.getElementById('loading').innerHTML = "ERİŞİM HATASI: SUNUCUYA BAĞLANILAMADI.";
+            }
+        }
+
+        // --- PREMİUM ARKA PLAN (ALTIN SİM TOZLARI) ---
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('canvas-bg'), alpha: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+
+        const particlesGeometry = new THREE.BufferGeometry();
+        const posArray = new Float32Array(1500 * 3);
+        for(let i=0; i < 1500 * 3; i++) { posArray[i] = (Math.random() - 0.5) * 10; }
+        particlesGeometry.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
+        const particlesMaterial = new THREE.PointsMaterial({ size: 0.005, color: 0xb8924e, transparent: true, opacity: 0.6 });
+        const particlesMesh = new THREE.Points(particlesGeometry, particlesMaterial);
+        scene.add(particlesMesh);
+        camera.position.z = 2;
+
+        function animate() {
+            requestAnimationFrame(animate);
+            particlesMesh.rotation.y += 0.0008;
+            particlesMesh.rotation.x += 0.0004;
+            renderer.render(scene, camera);
+        }
+
+        window.onload = () => {
+            duyurulariGetir();
+            animate();
+        };
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    </script>
+</body>
+</html>

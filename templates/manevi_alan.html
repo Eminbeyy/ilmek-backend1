@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <script>
+        const token = localStorage.getItem('token');
+        if (!token) { window.location.href = 'auth.html'; }
+    </script>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Manevi Alan | İLMEK</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Cinzel:wght@400;700&family=Amiri:ital,wght@0,400;0,700;1,400&family=Dancing+Script:wght@700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    
+    <style>
+        :root { --bg-body: #F5F5F7; --bg-card: #FFFFFF; --text-primary: #1D1D1F; --gold: #b8924e; --green: #34C759; --red: #FF3B30; --radius: 24px; --shadow: 0 8px 30px rgba(0,0,0,0.08); }
+        @media (prefers-color-scheme: dark) { :root { --bg-body: #000000; --bg-card: #1C1C1E; --text-primary: #F5F5F7; --shadow: 0 8px 30px rgba(0,0,0,0.5); } }
+        body { margin: 0; padding: 0; font-family: 'Inter', sans-serif; background: var(--bg-body); color: var(--text-primary); min-height: 100vh; display: flex; flex-direction: column; overflow-x: hidden; }
+        
+        .header { padding: 20px; display: flex; align-items: center; justify-content: space-between; }
+        .back-btn { font-size: 1.2rem; color: var(--text-primary); text-decoration: none; display: flex; align-items: center; gap: 5px; font-weight: 600; }
+        .header-title { font-family: 'Cinzel', serif; font-size: 1.2rem; color: var(--gold); letter-spacing: 2px; }
+
+        .tabs-wrapper { padding: 0 20px 20px; }
+        .tabs { background: rgba(128,128,128,0.1); padding: 4px; border-radius: 12px; display: flex; }
+        .tab-btn { flex: 1; padding: 10px; border: none; background: transparent; color: #888; font-weight: 600; font-size: 0.9rem; cursor: pointer; border-radius: 8px; transition: 0.3s; }
+        .tab-btn.active { background: var(--bg-card); color: var(--text-primary); box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+
+        .content-area { flex: 1; padding: 20px; position: relative; }
+        .tab-content { display: none; animation: fadeIn 0.4s ease; }
+        .tab-content.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* --- ARAPÇA HAT TASARIMI --- */
+        .salavat-box { text-align: center; margin-bottom: 30px; padding: 20px; background: var(--bg-card); border-radius: 20px; border: 1px solid rgba(184, 146, 78, 0.1); box-shadow: var(--shadow); }
+        .salavat-arabic {
+            font-family: 'Amiri', serif; font-size: 2.2rem; color: var(--text-primary); 
+            line-height: 1.8; margin-bottom: 10px; direction: rtl; font-weight: 700;
+            text-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        }
+        .salavat-meal { font-size: 0.85rem; color: #888; font-style: italic; font-family: 'Inter', sans-serif; }
+
+        /* Zikirmatik */
+        .zikir-container { display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .counter-label { font-size: 0.7rem; letter-spacing: 2px; text-transform: uppercase; color: var(--gold); margin-bottom: 5px; font-weight: 700; }
+        .counter-display { font-size: 4rem; font-weight: 800; font-family: 'Inter', sans-serif; color: var(--text-primary); margin-bottom: 20px; font-variant-numeric: tabular-nums; }
+        
+        .zikir-btn { width: 200px; height: 200px; border-radius: 50%; background: var(--bg-card); border: 6px solid var(--gold); box-shadow: 0 20px 50px rgba(184, 146, 78, 0.25); display: flex; align-items: center; justify-content: center; cursor: pointer; position: relative; overflow: hidden; transition: 0.1s; }
+        .zikir-btn:active { transform: scale(0.95); border-color: #8E7035; }
+        .zikir-btn i { font-size: 3.5rem; color: var(--gold); opacity: 0.8; }
+        
+        .ripple { position: absolute; border-radius: 50%; background: rgba(184, 146, 78, 0.4); transform: scale(0); animation: rippleAnim 0.6s linear; pointer-events: none; }
+        @keyframes rippleAnim { to { transform: scale(4); opacity: 0; } }
+        
+        .total-counter { margin-top: 30px; background: rgba(184, 146, 78, 0.1); padding: 15px 30px; border-radius: 16px; text-align: center; width: 100%; border: 1px solid rgba(184, 146, 78, 0.2); }
+
+        /* Hatim */
+        .hatim-info { text-align: center; margin-bottom: 20px; color: var(--text-primary); }
+        .hatim-title { font-family: 'Amiri', serif; font-size: 1.8rem; color: var(--gold); margin-bottom: 5px; }
+        .cuz-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; }
+        .cuz-item { aspect-ratio: 1; background: var(--bg-card); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1rem; color: var(--text-primary); box-shadow: 0 4px 10px rgba(0,0,0,0.05); cursor: pointer; border: 1px solid transparent; position: relative; transition: 0.2s; }
+        
+        .cuz-item.empty { border-color: var(--green); color: var(--green); background: rgba(52, 199, 89, 0.1); }
+        .cuz-item.taken { background: rgba(255, 59, 48, 0.1); color: var(--red); border-color: rgba(255, 59, 48, 0.3); opacity: 0.6; cursor: not-allowed; }
+        .cuz-item.taken::after { content: '\f00d'; font-family: 'Font Awesome 6 Free'; font-weight: 900; position: absolute; font-size: 1.2rem; opacity: 0.5; }
+        .cuz-item.selected { background: var(--gold); color: #fff; border-color: var(--gold); transform: scale(1.1); box-shadow: 0 10px 20px rgba(184, 146, 78, 0.4); z-index: 2; }
+
+        .signature-area { margin-top: auto; padding: 30px; text-align: center; opacity: 0.6; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <a href="index.html" class="back-btn"><i class="fa-solid fa-chevron-left"></i> Geri</a>
+        <div class="header-title">MANEVİ ALAN</div>
+        <div style="width: 50px;"></div>
+    </div>
+
+    <div class="tabs-wrapper">
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab('zikir')">Zikirmatik</button>
+            <button class="tab-btn" onclick="switchTab('hatim')">Hatim Halkası</button>
+        </div>
+    </div>
+
+    <div class="content-area">
+        
+        <div id="tab-zikir" class="tab-content active">
+            
+            <div class="salavat-box">
+                <div class="salavat-arabic">
+                    اللَّهُمَّ صَلِّ عَلَى سَيِّدِنَا مُحَمَّدٍ وَعَلَى آلِ سَيِّدِنَا مُحَمَّدٍ
+                </div>
+                <div class="salavat-meal">
+                    "Allah'ım! Efendimiz Muhammed'e ve âline salât eyle"
+                </div>
+            </div>
+
+            <div class="zikir-container">
+                <div class="counter-label">SENİN ÇEKTİĞİN</div>
+                <div class="counter-display" id="myZikirCount">0</div>
+                
+                <div class="zikir-btn" id="zikirBtn" onclick="addZikir(event)">
+                    <i class="fa-solid fa-fingerprint"></i>
+                </div>
+
+                <div class="total-counter">
+                    <div style="font-size: 0.7rem; color: #888; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 1px;">KULÜP GENELİ TOPLAM</div>
+                    <div style="font-size: 1.4rem; font-weight: 700; color: var(--gold);" id="globalZikirCount">Yükleniyor...</div>
+                </div>
+            </div>
+        </div>
+
+        <div id="tab-hatim" class="tab-content">
+            <div class="hatim-info">
+                <div class="hatim-title">ختم الشريف</div>
+                <p style="font-size: 0.8rem; opacity: 0.7;">
+                    Okumak istediğiniz cüzü seçip onaylayın.<br>
+                    <span style="color:var(--green)">Yeşil: Boş</span> | <span style="color:var(--red)">Kırmızı: Alınmış</span>
+                </p>
+            </div>
+
+            <div class="cuz-grid" id="cuzContainer">
+                <div style="text-align:center; grid-column:span 5; color:#888;">Veriler yükleniyor...</div>
+            </div>
+
+            <div style="margin-top: 30px; text-align: center;">
+                <button id="confirmCuzBtn" onclick="confirmSelection()" style="background: var(--gold); color: #000; border: none; padding: 15px 30px; border-radius: 30px; font-weight: bold; cursor: pointer; width: 100%; transition:0.3s;">
+                    SEÇİMİ ONAYLA
+                </button>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="signature-area">
+        <div style="font-family: 'Dancing Script'; font-size: 1.5rem; color: var(--gold);">Design by İhsanoğlu</div>
+    </div>
+
+    <script>
+        const API_URL = 'https://ilmek-backend.onrender.com/api';
+        
+        // --- 1. GLOBAL VERİLERİ ÇEK ---
+        async function fetchManeviStats() {
+            try {
+                const res = await fetch(`${API_URL}/manevi/data`);
+                const data = await res.json();
+                
+                // Zikir Güncelle
+                document.getElementById('globalZikirCount').innerText = data.salavat.toLocaleString();
+                
+                // Hatim Güncelle
+                renderCuzGrid(data.hatim);
+            } catch (err) { console.error("Veri hatası", err); }
+        }
+        window.onload = fetchManeviStats;
+
+        // --- 2. ZİKİRMATİK ---
+        let myCount = parseInt(localStorage.getItem('my_zikir')) || 0;
+        document.getElementById('myZikirCount').innerText = myCount;
+
+        let pendingSalavats = 0;
+        let saveTimeout;
+
+        function addZikir(e) {
+            myCount++;
+            pendingSalavats++;
+            document.getElementById('myZikirCount').innerText = myCount;
+            localStorage.setItem('my_zikir', myCount);
+
+            // Frontend simülasyonu (anlık artış hissi)
+            let currentGlobal = parseInt(document.getElementById('globalZikirCount').innerText.replace(/,/g, '')) || 0;
+            document.getElementById('globalZikirCount').innerText = (currentGlobal + 1).toLocaleString();
+
+            if (navigator.vibrate) navigator.vibrate(30);
+            createRipple(e);
+
+            clearTimeout(saveTimeout);
+            saveTimeout = setTimeout(sendSalavatToServer, 1000);
+        }
+
+        async function sendSalavatToServer() {
+            if(pendingSalavats === 0) return;
+            try {
+                await fetch(`${API_URL}/manevi/salavat/add`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ count: pendingSalavats })
+                });
+                pendingSalavats = 0; 
+            } catch (err) { console.error("Salavat gönderilemedi"); }
+        }
+
+        function createRipple(e) {
+            const btn = document.getElementById('zikirBtn');
+            const ripple = document.createElement("span");
+            ripple.classList.add("ripple");
+            const rect = btn.getBoundingClientRect();
+            const size = btn.offsetWidth;
+            ripple.style.width = ripple.style.height = `${size}px`;
+            ripple.style.left = `${e.clientX - rect.left - size/2}px`;
+            ripple.style.top = `${e.clientY - rect.top - size/2}px`;
+            btn.appendChild(ripple);
+            setTimeout(() => { ripple.remove(); }, 600);
+        }
+
+        // --- 3. HATİM SİSTEMİ ---
+        let selectedCuz = null;
+
+        function renderCuzGrid(hatimStatus) {
+            const container = document.getElementById('cuzContainer');
+            container.innerHTML = '';
+
+            for (let i = 1; i <= 30; i++) {
+                const el = document.createElement('div');
+                el.className = 'cuz-item';
+                el.innerText = i;
+
+                const isTaken = hatimStatus[i]; 
+
+                if (isTaken) {
+                    el.classList.add('taken');
+                    el.title = "Bu cüz alınmış";
+                } else {
+                    el.classList.add('empty');
+                    el.onclick = () => selectCuz(el, i);
+                }
+                container.appendChild(el);
+            }
+        }
+
+        function selectCuz(el, cuzNo) {
+            document.querySelectorAll('.cuz-item.selected').forEach(item => {
+                item.classList.remove('selected');
+                item.style.background = ""; 
+                item.style.color = "";
+            });
+            el.classList.add('selected');
+            selectedCuz = cuzNo;
+        }
+
+        async function confirmSelection() {
+            if (!selectedCuz) return alert("Lütfen boş bir cüz seçiniz.");
+
+            const btn = document.getElementById('confirmCuzBtn');
+            btn.innerText = "KAYDEDİLİYOR...";
+            btn.disabled = true;
+
+            try {
+                const res = await fetch(`${API_URL}/manevi/hatim/take`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ cuzNo: selectedCuz })
+                });
+                
+                const result = await res.json();
+
+                if (result.success) {
+                    alert(`Allah kabul etsin! ${selectedCuz}. Cüzü aldınız.`);
+                    if(result.reset) alert("Maşallah! Bir hatim tamamlandı ve liste sıfırlandı.");
+                    
+                    selectedCuz = null;
+                    btn.innerText = "SEÇİMİ ONAYLA";
+                    btn.disabled = false;
+                    renderCuzGrid(result.hatim);
+                } else {
+                    alert(result.error || "Hata oluştu.");
+                    btn.innerText = "SEÇİMİ ONAYLA";
+                    btn.disabled = false;
+                }
+            } catch (err) {
+                console.error(err);
+                btn.innerText = "HATA";
+            }
+        }
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            document.getElementById('tab-' + tabName).classList.add('active');
+        }
+    </script>
+</body>
+</html>

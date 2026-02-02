@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Acil Kan | İLMEK</title>
+    
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-body: #F2F2F7; --bg-card: #FFFFFF; --text-main: #000000;
+            --text-sub: #8E8E93; --red: #FF3B30; --radius: 18px;
+        }
+        @media (prefers-color-scheme: dark) {
+            :root { --bg-body: #000000; --bg-card: #1C1C1E; --text-main: #FFFFFF; }
+        }
+        body { margin: 0; padding: 0; font-family: 'Inter', sans-serif; background: var(--bg-body); color: var(--text-main); padding-bottom: 100px; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
+
+        .header {
+            position: sticky; top: 0; z-index: 100; background: rgba(255, 59, 48, 0.95);
+            backdrop-filter: blur(10px); color: #fff; padding: 15px 20px;
+            display: flex; align-items: center; justify-content: space-between;
+            box-shadow: 0 4px 20px rgba(255, 59, 48, 0.3);
+        }
+        .back-btn { color: #fff; font-weight: 600; text-decoration: none; display: flex; align-items: center; gap: 5px; }
+        .page-title { font-weight: 800; letter-spacing: 1px; font-size: 1.1rem; }
+
+        .feed-container { padding: 20px; max-width: 600px; margin: 0 auto; }
+        
+        /* KAN KARTI */
+        .blood-card {
+            background: var(--bg-card); border-radius: var(--radius); padding: 20px;
+            margin-bottom: 15px; display: flex; align-items: center; gap: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-left: 5px solid var(--red);
+            animation: slideIn 0.4s ease-out;
+        }
+        @keyframes slideIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        .blood-type-box {
+            width: 70px; height: 70px; background: rgba(255, 59, 48, 0.1);
+            border-radius: 14px; display: flex; flex-direction: column;
+            align-items: center; justify-content: center; color: var(--red);
+            font-weight: 900; font-size: 1.8rem; flex-shrink: 0;
+            border: 1px solid rgba(255, 59, 48, 0.2);
+        }
+        .rh-text { font-size: 0.8rem; font-weight: 600; margin-top: -5px; }
+        .blood-info { flex: 1; }
+        .hospital-name { font-weight: 700; font-size: 1rem; margin-bottom: 4px; display: block; }
+        .patient-info { font-size: 0.85rem; color: var(--text-sub); display: block; }
+        .tag-urgent { background: var(--red); color: #fff; font-size: 0.7rem; padding: 3px 8px; border-radius: 6px; font-weight: 600; display: inline-block; margin-top: 5px; }
+
+        .call-btn {
+            width: 45px; height: 45px; background: var(--red); border-radius: 50%;
+            display: flex; align-items: center; justify-content: center; color: #fff;
+            text-decoration: none; box-shadow: 0 5px 15px rgba(255, 59, 48, 0.4);
+        }
+
+        /* FAB */
+        .fab-add {
+            position: fixed; bottom: 30px; right: 20px; width: 60px; height: 60px;
+            background: var(--text-main); color: var(--bg-body); border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.5rem; box-shadow: 0 10px 30px rgba(0,0,0,0.3); z-index: 90;
+        }
+
+        /* MODAL */
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(3px); z-index: 1000; display: none; }
+        .modal-sheet {
+            position: fixed; bottom: -100%; left: 50%; transform: translateX(-50%); width: 100%; max-width: 600px;
+            background: var(--bg-card); border-radius: 25px 25px 0 0; padding: 25px; transition: 0.4s cubic-bezier(0.19, 1, 0.22, 1); z-index: 1001;
+        }
+        .modal-sheet.active { bottom: 0; }
+        .form-group { margin-bottom: 15px; }
+        .form-label { display: block; font-size: 0.8rem; font-weight: 600; margin-bottom: 5px; color: var(--text-sub); }
+        .form-input, .form-select { width: 100%; padding: 14px; border-radius: 12px; border: 1px solid rgba(0,0,0,0.1); background: var(--bg-body); color: var(--text-main); font-size: 1rem; }
+        .submit-btn { width: 100%; padding: 16px; background: var(--red); color: #fff; border: none; border-radius: 14px; font-weight: 700; margin-top: 10px; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <a href="index.html" class="back-btn"><i class="fa-solid fa-chevron-left"></i> Geri</a>
+        <div class="page-title">ACİL KAN İLANLARI</div>
+        <div style="width: 50px;"></div>
+    </div>
+
+    <div class="feed-container" id="feedList">
+        <p style="text-align: center; color: var(--text-sub);">İlanlar yükleniyor...</p>
+    </div>
+
+    <div class="fab-add" onclick="openModal()"><i class="fa-solid fa-plus"></i></div>
+
+    <div class="modal-overlay" id="overlay" onclick="closeModal()"></div>
+    <div class="modal-sheet" id="sheet">
+        <div style="display:flex; justify-content:space-between; margin-bottom:20px;">
+            <span style="font-weight:800; font-size:1.2rem;">Yeni İlan Oluştur</span>
+            <i class="fa-solid fa-xmark" onclick="closeModal()" style="cursor:pointer; font-size:1.5rem;"></i>
+        </div>
+
+        <form id="bloodForm" onsubmit="kanIlanıVer(event)">
+            <div class="form-group">
+                <label class="form-label">KAN GRUBU</label>
+                <select class="form-select" id="bloodType" required>
+                    <option value="A Rh+">A Rh+</option><option value="A Rh-">A Rh-</option>
+                    <option value="B Rh+">B Rh+</option><option value="B Rh-">B Rh-</option>
+                    <option value="0 Rh+">0 Rh+</option><option value="0 Rh-">0 Rh-</option>
+                    <option value="AB Rh+">AB Rh+</option><option value="AB Rh-">AB Rh-</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">HASTANE ADI</label>
+                <input type="text" class="form-input" id="hospital" placeholder="Örn: Tıp Fakültesi" required>
+            </div>
+            <div class="form-group">
+                <label class="form-label">HASTA / YAKINI ADI</label>
+                <input type="text" class="form-input" id="patientName" placeholder="İsim Soyisim" required>
+            </div>
+            <div class="form-group">
+                <label class="form-label">İLETİŞİM NO</label>
+                <input type="tel" class="form-input" id="phone" placeholder="05xx..." required>
+            </div>
+            <button type="submit" class="submit-btn" id="subBtn">İLAN YAYINLA</button>
+        </form>
+    </div>
+
+    <script>
+        const API_URL = 'https://ilmek-backend.onrender.com/api';
+
+        // --- SAYFA AÇILDIĞINDA İLANLARI ÇEK ---
+        window.onload = loadActiveBloodAds;
+
+        async function loadActiveBloodAds() {
+            try {
+                const res = await fetch(`${API_URL}/blood/active`);
+                const data = await res.json();
+                const feed = document.getElementById('feedList');
+                
+                if(data.length === 0) {
+                    feed.innerHTML = `<p style="text-align:center; margin-top:50px; color:var(--text-sub);">Aktif ilan bulunamadı.</p>`;
+                    return;
+                }
+
+                feed.innerHTML = data.map(ad => {
+                    const [type, rh] = ad.bloodType.split(' ');
+                    return `
+                    <div class="blood-card">
+                        <div class="blood-type-box">${type}<span class="rh-text">${rh}</span></div>
+                        <div class="blood-info">
+                            <span class="hospital-name">${ad.hospital}</span>
+                            <span class="patient-info">Hasta: ${ad.patientName}</span>
+                            <span class="tag-urgent">ACİL</span>
+                        </div>
+                        <a href="tel:${ad.phone}" class="call-btn"><i class="fa-solid fa-phone"></i></a>
+                    </div>`;
+                }).join('');
+            } catch (err) { console.error(err); }
+        }
+
+        // --- İLAN YAYINLAMA (OTP DOĞRULAMALI) ---
+        async function kanIlanıVer(e) {
+            e.preventDefault();
+            const btn = document.getElementById('subBtn');
+            
+            const formData = {
+                patientName: document.getElementById('patientName').value,
+                bloodType: document.getElementById('bloodType').value,
+                hospital: document.getElementById('hospital').value,
+                phone: document.getElementById('phone').value
+            };
+
+            btn.innerText = "İşleniyor...";
+            btn.disabled = true;
+
+            try {
+                // 1. AŞAMA: İsteği gönder ve OTP al
+                const response = await fetch(`${API_URL}/blood/add`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formData)
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    // 2. AŞAMA: Onay Kodu Sor
+                    const userCode = prompt(`Lütfen telefonunuza gelen 4 haneli kodu girin.\n(Test Kodu: ${result.otp})`);
+
+                    if (userCode) {
+                        const verifyRes = await fetch(`${API_URL}/blood/verify`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ id: result.id, code: userCode })
+                        });
+
+                        if (verifyRes.ok) {
+                            alert("✅ İlanınız onaylandı ve yayına alındı!");
+                            closeModal();
+                            document.getElementById('bloodForm').reset();
+                            loadActiveBloodAds();
+                        } else { alert("❌ Onay kodu hatalı!"); }
+                    }
+                } else {
+                    alert(result.error || "İlan verilemedi!");
+                }
+            } catch (err) {
+                alert("Sunucu bağlantı hatası!");
+            } finally {
+                btn.innerText = "İLAN YAYINLA";
+                btn.disabled = false;
+            }
+        }
+
+        function openModal() { document.getElementById('overlay').style.display = 'block'; setTimeout(() => document.getElementById('sheet').classList.add('active'), 10); }
+        function closeModal() { document.getElementById('sheet').classList.remove('active'); setTimeout(() => document.getElementById('overlay').style.display = 'none', 400); }
+    </script>
+</body>
+</html>

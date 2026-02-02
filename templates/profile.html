@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profilim | İLMEK</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Cinzel:wght@700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #050505; --gold: #b8924e; --glass: rgba(255, 255, 255, 0.03);
+            --glass-border: rgba(255, 255, 255, 0.08); --text: #F5F5F7;
+        }
+
+        body {
+            margin: 0; background: var(--bg); font-family: 'Inter', sans-serif;
+            color: var(--text); min-height: 100vh; display: flex; justify-content: center; align-items: center;
+        }
+
+        .profile-card {
+            width: 100%; max-width: 500px; background: var(--glass);
+            backdrop-filter: blur(30px); border: 1px solid var(--glass-border);
+            border-radius: 30px; padding: 40px; text-align: center;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+        }
+
+        .avatar {
+            width: 100px; height: 100px; background: linear-gradient(135deg, var(--gold), #55411d);
+            border-radius: 50%; margin: 0 auto 20px; display: flex;
+            align-items: center; justify-content: center; font-size: 2.5rem; color: #000;
+            font-family: 'Cinzel', serif; font-weight: bold;
+        }
+
+        .user-name { font-family: 'Cinzel', serif; font-size: 1.8rem; color: var(--gold); margin-bottom: 5px; }
+        .user-role { font-size: 0.8rem; letter-spacing: 3px; color: #888; text-transform: uppercase; margin-bottom: 30px; }
+
+        .info-grid { text-align: left; background: rgba(255,255,255,0.02); border-radius: 20px; padding: 20px; border: 1px solid var(--glass-border); }
+        .info-item { margin-bottom: 15px; display: flex; justify-content: space-between; font-size: 0.9rem; }
+        .info-label { color: var(--gold); opacity: 0.7; font-weight: 600; }
+
+        .logout-btn {
+            margin-top: 30px; background: transparent; border: 1px solid var(--red);
+            color: #ff4d4d; padding: 12px 25px; border-radius: 12px;
+            cursor: pointer; transition: 0.3s; font-weight: 700; width: 100%;
+        }
+        .logout-btn:hover { background: #ff4d4d; color: #fff; }
+
+        .back-link { display: block; margin-top: 20px; color: var(--gold); text-decoration: none; font-size: 0.8rem; opacity: 0.6; }
+    </style>
+</head>
+<body>
+
+    <div class="profile-card">
+        <div class="avatar" id="avatar-initial">?</div>
+        <div class="user-name" id="display-name">Yükleniyor...</div>
+        <div class="user-role" id="display-role">ÖĞRENCİ</div>
+
+        <div class="info-grid">
+            <div class="info-item">
+                <span class="info-label">E-posta</span>
+                <span id="display-email">...</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Kullanıcı Adı</span>
+                <span id="display-username">...</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Telefon</span>
+                <span id="display-phone">...</span>
+            </div>
+        </div>
+
+        <button class="logout-btn" onclick="logout()">OTURUMU KAPAT</button>
+        <a href="index.html" class="back-link"><i class="fa-solid fa-arrow-left"></i> Portala Dön</a>
+    </div>
+
+    <script>
+        // Sayfa açıldığında token kontrolü ve veri çekme
+        window.onload = async () => {
+            const token = localStorage.getItem('token');
+            if (!token) window.location.href = 'auth.html';
+
+            try {
+                // Backend'den profil bilgilerini çek (Yeni bir route lazım olacak)
+                const res = await fetch('https://ilmek-backend.onrender.com/api/auth/me', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const user = await res.json();
+
+                if(res.ok) {
+                    document.getElementById('display-name').innerText = user.fullName;
+                    document.getElementById('display-email').innerText = user.email;
+                    document.getElementById('display-username').innerText = user.username;
+                    document.getElementById('display-phone').innerText = user.phone || 'Girilmedi';
+                    document.getElementById('display-role').innerText = user.role || 'ÖĞRENCİ';
+                    document.getElementById('avatar-initial').innerText = user.fullName.charAt(0).toUpperCase();
+                }
+            } catch (err) {
+                console.error("Profil yüklenemedi");
+            }
+        };
+
+        function logout() {
+            localStorage.clear();
+            window.location.href = 'auth.html';
+        }
+    </script>
+</body>
+</html>
